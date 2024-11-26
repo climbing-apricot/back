@@ -2,6 +2,8 @@ package com.apricot.back.member.service;
 
 import com.apricot.back.global.exception.CustomException;
 import com.apricot.back.global.exception.ErrorCode;
+import com.apricot.back.global.jwt.TokenDto;
+import com.apricot.back.global.jwt.TokenProvider;
 import com.apricot.back.member.dto.RequestDto;
 import com.apricot.back.member.entity.Member;
 import com.apricot.back.member.repository.MemberRepository;
@@ -18,9 +20,10 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenProvider tokenProvider;
 
     @Transactional
-    public void signUp(RequestDto.SignUp requestDto, MultipartFile image) {
+    public void signUp(RequestDto.SignUp requestDto, MultipartFile file) {
         String email = requestDto.getEmail();
         String nickname = requestDto.getNickname();
         Optional<Member> existedMember = memberRepository.findByEmailOrNickname(email, nickname);
@@ -45,7 +48,7 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public String login(RequestDto.Login requestDto) {
+    public TokenDto login(RequestDto.Login requestDto) {
         String email = requestDto.getEmail();
 
         Member member = memberRepository.findByEmail(email).orElseThrow(
@@ -56,8 +59,6 @@ public class MemberService {
             throw new CustomException(ErrorCode.PASSWORD_NOT_MATCHED);
         }
 
-        // 토큰 발행
-
-        return null;
+        return tokenProvider.generateToken(member);
     }
 }
