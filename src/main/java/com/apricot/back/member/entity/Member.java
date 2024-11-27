@@ -45,4 +45,18 @@ public class Member extends TimeStamped {
         this.status = MemberStatus.ACTIVE;
         this.grade = MemberGrade.MEMBER;
     }
+
+    public void modifyInfo(String nickname, String password, String imageUrl) {
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+
+        if (password != null) {
+            this.password = password;
+        }
+
+        if (imageUrl != null) {
+            this.imageUrl = imageUrl;
+        }
+    }
 }

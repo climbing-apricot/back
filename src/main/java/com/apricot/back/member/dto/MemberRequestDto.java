@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-public class RequestDto {
+public class MemberRequestDto {
 
     @Data
     @NoArgsConstructor
@@ -33,6 +33,14 @@ public class RequestDto {
     @AllArgsConstructor
     public static class Login {
         private String email;
+        private String password;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Modify {
+        private String nickname;
         private String password;
     }
 }
