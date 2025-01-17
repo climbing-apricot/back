@@ -54,9 +54,7 @@ public class SecurityConfig {
                     .authenticationEntryPoint(authenticationEntryPoint);
         });
 
-        http.authorizeHttpRequests(authorize -> authorize
-                .anyRequest().permitAll()
-        );
+        http.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
 
         return http.build();
     }

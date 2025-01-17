@@ -1,6 +1,7 @@
 package com.apricot.back.member.controller;
 
 import com.apricot.back.global.jwt.TokenDto;
+import com.apricot.back.global.utils.UriCreator;
 import com.apricot.back.member.dto.MemberRequestDto;
 import com.apricot.back.member.entity.Member;
 import com.apricot.back.member.service.MemberService;
@@ -18,10 +19,9 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestPart MemberRequestDto.SignUp requestDto,
-                                    @RequestPart(required = false) MultipartFile file) {
-        memberService.signUp(requestDto, file);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> signUp(@RequestBody MemberRequestDto.SignUp requestDto) {
+        long memberId = memberService.signUp(requestDto);
+        return ResponseEntity.created(UriCreator.createURI(memberId)).build();
     }
 
     @PostMapping("/login")

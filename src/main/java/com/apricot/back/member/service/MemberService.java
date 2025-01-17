@@ -2,6 +2,10 @@ package com.apricot.back.member.service;
 
 import com.apricot.back.global.exception.CustomException;
 import com.apricot.back.global.exception.ErrorCode;
+import com.apricot.back.global.exception.member.MemberAlreadyExistsException;
+import com.apricot.back.global.exception.member.MemberNotAuthorizedException;
+import com.apricot.back.global.exception.member.MemberNotFoundException;
+import com.apricot.back.global.exception.member.PasswordNotMatchedException;
 import com.apricot.back.global.jwt.TokenDto;
 import com.apricot.back.global.jwt.TokenProvider;
 import com.apricot.back.member.dto.MemberRequestDto;
@@ -24,17 +28,14 @@ public class MemberService {
     private final TokenProvider tokenProvider;
 
     @Transactional
-    public void signUp(MemberRequestDto.SignUp requestDto, MultipartFile file) {
+    public long signUp(MemberRequestDto.SignUp requestDto) {
         String email = requestDto.getEmail();
         String nickname = requestDto.getNickname();
         Optional<Member> existedMember = memberRepository.findByEmailOrNickname(email, nickname);
 
         if (existedMember.isPresent()) {
-            throw new CustomException(ErrorCode.MEMBER_ALREADY_EXISTS);
+            throw new MemberAlreadyExistsException();
         }
-
-        // 이미지 저장 (String)
-        String imageUrl = "";
 
         Member member = Member.builder()
                 .email(requestDto.getEmail())
@@ -42,10 +43,9 @@ public class MemberService {
                 .name(requestDto.getName())
                 .nickname(requestDto.getNickname())
                 .phone(requestDto.getPhone())
-                .imageUrl(imageUrl)
                 .build();
 
-        memberRepository.save(member);
+        return memberRepository.save(member).getId();
     }
 
     @Transactional(readOnly = true)
@@ -53,11 +53,11 @@ public class MemberService {
         String email = requestDto.getEmail();
 
         Member member = memberRepository.findByEmail(email).orElseThrow(
-                () -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)
+                () -> new MemberNotFoundException()
         );
 
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            throw new CustomException(ErrorCode.PASSWORD_NOT_MATCHED);
+            throw new PasswordNotMatchedException();
         }
 
         return tokenProvider.generateToken(member);
@@ -66,11 +66,11 @@ public class MemberService {
     @Transactional
     public void modifyMember(long memberId, MemberRequestDto.Modify requestDto, MultipartFile file, Member member) {
         Member memberToModify = memberRepository.findById(memberId).orElseThrow(
-                () -> new CustomException(ErrorCode.MEMBER_NOT_FOUND)
+                () -> new MemberNotFoundException()
         );
 
         if (memberToModify.getId() != member.getId() && !member.getGrade().equals(MemberGrade.OWNER)) {
-            throw new CustomException(ErrorCode.MEMBER_NOT_AUTHORIZED);
+            throw new MemberNotAuthorizedException();
         }
 
         // 프로필 이미지 처리
